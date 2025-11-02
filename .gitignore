@@ -1,0 +1,137 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Vite build output
+dist-ssr
+*.local
+
+# Rollup build output
+build/
+
+# Webpack build output
+bundle/
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out/
+
+# AWS credentials (never commit these!)
+.aws/
+aws-credentials.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Build outputs
+/frontend/build/
+/backend/dist/
+/shared/dist/
+
+# Lambda zip files
+*.zip
+functions.zip
+skills-lambda.zip
+
+# AWS deployment artifacts
+lambda-trust-policy.json
+dynamodb-policy.json
+bucket-policy.json
+aws-config.json
+
+# Temporary files
+tmp/
+temp/
+
+# Test artifacts
+coverage/
+*.lcov
+junit.xml
+
+# Package manager lockfiles (keep package-lock.json for consistency)
+yarn.lock
+pnpm-lock.yaml
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
