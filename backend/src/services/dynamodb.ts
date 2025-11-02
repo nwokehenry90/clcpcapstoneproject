@@ -26,7 +26,7 @@ export class SkillService {
   }) {
     const timestamp = getCurrentTimestamp();
     const skill = {
-      id: generateId(),
+      skillId: generateId(),
       ...skillData,
       isAvailable: true,
       createdAt: timestamp,
@@ -44,7 +44,7 @@ export class SkillService {
   async getSkill(skillId: string) {
     const result = await docClient.send(new GetCommand({
       TableName: this.tableName,
-      Key: { id: skillId },
+      Key: { skillId: skillId },
     }));
 
     return result.Item;
@@ -73,7 +73,7 @@ export class SkillService {
 
     const result = await docClient.send(new UpdateCommand({
       TableName: this.tableName,
-      Key: { id: skillId },
+      Key: { skillId: skillId },
       UpdateExpression: `SET ${updateExpressions.join(', ')}`,
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -86,7 +86,7 @@ export class SkillService {
   async deleteSkill(skillId: string) {
     await docClient.send(new DeleteCommand({
       TableName: this.tableName,
-      Key: { id: skillId },
+      Key: { skillId: skillId },
     }));
   }
 

@@ -14,9 +14,9 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
-    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
     "@aws-sdk/lib-dynamodb": "^3.0.0",
     "@aws-sdk/s3-request-presigner": "^3.0.0",
     "uuid": "^9.0.0"
@@ -30,6 +30,6 @@
     "eslint": "^8.0.0",
     "jest": "^29.0.0",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.9.3"
   }
 }

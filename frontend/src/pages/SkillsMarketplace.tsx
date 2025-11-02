@@ -8,7 +8,7 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://your-api-gateway-url.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'https://your-api-gateway-url.com/prod';
 
 interface Skill {
   id: string;
@@ -51,8 +51,8 @@ const SkillsMarketplace: React.FC = () => {
   const fetchSkills = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/skills`);
-      setSkills(response.data.skills || []);
+      const response = await axios.get(`${API_BASE_URL}/api/skills`);
+      setSkills(response.data.data?.skills || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching skills:', err);

@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://your-api-gateway-url.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'https://your-api-gateway-url.com/prod';
 
 interface SkillFormData {
   title: string;
@@ -107,7 +107,7 @@ const PostSkill: React.FC = () => {
     setError(null);
 
     try {
-      await axios.post(`${API_BASE_URL}/skills`, formData);
+      await axios.post(`${API_BASE_URL}/api/skills`, formData);
       setSuccess(true);
       
       // Redirect after showing success message
