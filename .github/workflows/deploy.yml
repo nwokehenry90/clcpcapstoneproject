@@ -120,9 +120,12 @@ jobs:
       - name: Invalidate CloudFront (if exists)
         continue-on-error: true
         run: |
-          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='${{ env.S3_BUCKET }}.s3.amazonaws.com']].Id" --output text)
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='${{ env.S3_BUCKET }}.s3.amazonaws.com']].Id" --output text 2>/dev/null || echo "")
           if [ ! -z "$DISTRIBUTION_ID" ]; then
+            echo "CloudFront distribution found: $DISTRIBUTION_ID"
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          else
+            echo "No CloudFront distribution found - skipping cache invalidation"
           fi
 
       - name: Deployment summary
