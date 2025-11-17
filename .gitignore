@@ -103,12 +103,17 @@ Desktop.ini
 *.zip
 functions.zip
 skills-lambda.zip
+lambda-deployment.zip
 
-# AWS deployment artifacts
+# AWS deployment artifacts (one-time setup files)
 lambda-trust-policy.json
 dynamodb-policy.json
 bucket-policy.json
 aws-config.json
+
+# Backup directories
+**/node_modules.backup/
+**/*.backup/
 
 # Temporary files
 tmp/
