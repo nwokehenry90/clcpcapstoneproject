@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import SkillsMarketplace from './pages/SkillsMarketplace';
 import PostSkill from './pages/PostSkill';
+import ProfilePage from './pages/ProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
 import Layout from './components/Layout';
 
 function App() {
@@ -33,6 +35,22 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <PostSkill />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <ProfilePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute>
+                          <AdminDashboard />
                         </ProtectedRoute>
                       }
                     />

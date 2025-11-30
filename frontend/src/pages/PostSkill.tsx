@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   CheckCircleIcon,
-  ExclamationTriangleIcon 
+  ExclamationTriangleIcon,
+  InformationCircleIcon 
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { profileApi } from '../services/apiService';
 
 const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'https://your-api-gateway-url.com/prod';
 
@@ -33,6 +35,8 @@ const PostSkill: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   // Populate user info from auth context
   useEffect(() => {
@@ -42,8 +46,21 @@ const PostSkill: React.FC = () => {
         userName: user.attributes.name || user.username || '',
         userEmail: user.email || ''
       }));
+      loadUserProfile();
     }
   }, [user]);
+
+  const loadUserProfile = async () => {
+    try {
+      setProfileLoading(true);
+      const response = await profileApi.getProfile();
+      setUserProfile(response.data);
+    } catch (err) {
+      console.error('Failed to load user profile:', err);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const categories = [
     'Technology',
@@ -151,6 +168,36 @@ const PostSkill: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Certification Status Banner */}
+      {!profileLoading && userProfile && (
+        <div className="mb-6">
+          {userProfile.isCertified ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
+              <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-semibold text-green-900">You are a certified provider</h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Your skills will be displayed with a verified badge to build trust with the community.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
+              <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-semibold text-blue-900">Get verified as a certified provider</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Upload your professional certificates to get a verified badge and increase trust.{' '}
+                  <Link to="/profile" className="font-medium underline hover:text-blue-800">
+                    Go to Profile →
+                  </Link>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">Share Your Skill</h1>

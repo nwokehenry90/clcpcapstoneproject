@@ -1,0 +1,36 @@
+{
+  "Version": "2012-12-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::oshawa-skills-certifications/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:Query"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:*:table/oshawa-user-profiles",
+        "arn:aws:dynamodb:us-east-1:*:table/oshawa-certifications",
+        "arn:aws:dynamodb:us-east-1:*:table/oshawa-certifications/index/*"
+      ]
+    }
+  ]
+}

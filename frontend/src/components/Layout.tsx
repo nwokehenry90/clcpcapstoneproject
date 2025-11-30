@@ -5,6 +5,7 @@ import {
   PlusCircleIcon,
   MapPinIcon,
   UserCircleIcon,
+  ShieldCheckIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,8 +30,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navigation = [
     { name: 'Browse Skills', href: '/marketplace', icon: HomeIcon },
-    { name: 'Post a Skill', href: '/post-skill', icon: PlusCircleIcon },
+    { name: 'Post a Skill', href: '/post-skill', icon: PlusCircleIcon, requiresAuth: true },
+    { name: 'My Profile', href: '/profile', icon: UserCircleIcon, requiresAuth: true },
   ];
+
+  // Simple admin check - can be enhanced later with actual Cognito groups check
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    // Check if user has admin role from Cognito groups
+    if (user) {
+      // This will be populated when user logs in through Cognito
+      // For now, set to false - will be updated when backend integration is complete
+      setIsAdmin(false);
+    }
+  }, [user]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -48,23 +62,39 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                {navigation.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`${
-                        isActive(item.href)
-                          ? 'border-blue-500 text-gray-900'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  );
-                })}
+                {navigation
+                  .filter(item => !item.requiresAuth || isAuthenticated)
+                  .map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={`${
+                          isActive(item.href)
+                            ? 'border-blue-500 text-gray-900'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                {/* Admin Dashboard Link */}
+                {isAuthenticated && isAdmin && (
+                  <Link
+                    to="/admin"
+                    className={`${
+                      isActive('/admin')
+                        ? 'border-blue-500 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1`}
+                  >
+                    <ShieldCheckIcon className="h-4 w-4" />
+                    <span>Admin</span>
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-4">

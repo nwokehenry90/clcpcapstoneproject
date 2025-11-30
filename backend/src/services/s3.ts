@@ -70,6 +70,50 @@ export class S3Service {
     return `pictures/${userId}/${timestamp}_${uniqueId}.${fileExtension}`;
   }
 
+  // Certification-specific methods
+  generateCertificationKey(userId: string, filename: string): string {
+    const timestamp = Date.now();
+    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+    return `certs/${userId}/${timestamp}-${sanitizedFilename}`;
+  }
+
+  async generateCertUploadUrl(userId: string, filename: string, fileSize: number): Promise<{ uploadUrl: string; key: string }> {
+    const key = this.generateCertificationKey(userId, filename);
+    
+    const command = new PutObjectCommand({
+      Bucket: 'oshawa-skills-certifications',  // Dedicated bucket for certs
+      Key: key,
+      ContentType: 'application/pdf',
+      Metadata: {
+        userId: userId,
+        originalName: filename,
+        uploadedAt: new Date().toISOString(),
+      },
+    });
+
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // 5 minutes
+    
+    return { uploadUrl, key };
+  }
+
+  async getCertDownloadUrl(key: string): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: 'oshawa-skills-certifications',
+      Key: key,
+    });
+
+    return await getSignedUrl(s3Client, command, { expiresIn: 900 }); // 15 minutes
+  }
+
+  async deleteCertification(key: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: 'oshawa-skills-certifications',
+      Key: key,
+    });
+
+    await s3Client.send(command);
+  }
+
   async createThumbnail(sourceKey: string): Promise<string> {
     // This would typically use AWS Lambda with Sharp or similar image processing library
     // For now, we'll just return the thumbnail key that would be generated

@@ -7,6 +7,9 @@ import {
   deleteSkill, 
   searchSkills 
 } from './handlers/skills';
+import { getProfile, updateProfile } from './handlers/profile';
+import { uploadCertification, getUserCertifications, deleteCertification } from './handlers/certifications';
+import { getPendingCertifications, approveCertification, rejectCertification } from './handlers/admin';
 import { healthCheck, corsHandler } from './handlers/health';
 import { logger } from './utils/common';
 
@@ -62,6 +65,59 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         if (httpMethod === 'DELETE') {
           return deleteSkill(event);
         }
+      }
+    }
+
+    // Profile routes
+    if (path === '/api/profile') {
+      if (httpMethod === 'GET') {
+        return getProfile(event);
+      }
+      if (httpMethod === 'PUT') {
+        return updateProfile(event);
+      }
+    }
+
+    // Certifications routes
+    if (path.startsWith('/api/certifications')) {
+      if (httpMethod === 'GET' && path === '/api/certifications') {
+        return getUserCertifications(event);
+      }
+      
+      if (httpMethod === 'POST' && path === '/api/certifications') {
+        return uploadCertification(event);
+      }
+      
+      // Handle individual certification routes: /api/certifications/{id}
+      const certIdMatch = path.match(/^\/api\/certifications\/([^/]+)$/);
+      if (certIdMatch && httpMethod === 'DELETE') {
+        const certId = certIdMatch[1];
+        event.pathParameters = { id: certId };
+        return deleteCertification(event);
+      }
+    }
+
+    // Admin routes
+    if (path.startsWith('/api/admin')) {
+      // GET /api/admin/certifications - Get pending certifications
+      if (httpMethod === 'GET' && path === '/api/admin/certifications') {
+        return getPendingCertifications(event);
+      }
+      
+      // POST /api/admin/certifications/{id}/approve
+      const approveMatch = path.match(/^\/api\/admin\/certifications\/([^/]+)\/approve$/);
+      if (approveMatch && httpMethod === 'POST') {
+        const certId = approveMatch[1];
+        event.pathParameters = { id: certId };
+        return approveCertification(event);
+      }
+      
+      // POST /api/admin/certifications/{id}/reject
+      const rejectMatch = path.match(/^\/api\/admin\/certifications\/([^/]+)\/reject$/);
+      if (rejectMatch && httpMethod === 'POST') {
+        const certId = rejectMatch[1];
+        event.pathParameters = { id: certId };
+        return rejectCertification(event);
       }
     }
 

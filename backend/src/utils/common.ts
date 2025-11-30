@@ -50,12 +50,24 @@ export const parseBody = (event: APIGatewayProxyEvent) => {
 };
 
 // Get user ID from JWT token
-export const getUserIdFromEvent = (event: APIGatewayProxyEvent): string => {
+export const getUserIdFromEvent = (event: APIGatewayProxyEvent): string | null => {
   const claims = event.requestContext.authorizer?.claims;
-  if (!claims || !claims.sub) {
-    throw new Error('User not authenticated');
+  return claims?.sub || null;
+};
+
+// Check if user is admin
+export const isAdmin = (event: APIGatewayProxyEvent): boolean => {
+  const groups = event.requestContext.authorizer?.claims?.['cognito:groups'];
+  if (!groups) return false;
+  
+  // groups can be a string or array
+  if (typeof groups === 'string') {
+    return groups.split(',').includes('Admins');
   }
-  return claims.sub;
+  if (Array.isArray(groups)) {
+    return groups.includes('Admins');
+  }
+  return false;
 };
 
 // Environment variables
