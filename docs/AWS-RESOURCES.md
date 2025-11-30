@@ -253,6 +253,25 @@ SES_SENDER_EMAIL=noreply@oshawaskills.com
 - Log group creation
 
 #### 2. DynamoDBAccess (Inline Policy)
+**Purpose:** Full CRUD access to all DynamoDB tables and indexes
+
+**Permissions Granted:**
+- `dynamodb:GetItem` - Read single items by primary key
+- `dynamodb:PutItem` - Create new items or replace existing ones
+- `dynamodb:UpdateItem` - Modify specific attributes of existing items
+- `dynamodb:DeleteItem` - Remove items from tables
+- `dynamodb:Scan` - Read all items in table (used for admin views, skill listings)
+- `dynamodb:Query` - Efficient reads using primary key or GSI (pending certs, approved certs)
+
+**Resources Protected:**
+- `arn:aws:dynamodb:us-east-1:*:table/oshawa-skills` - All marketplace skills
+- `arn:aws:dynamodb:us-east-1:*:table/oshawa-skills/index/*` - Skills table indexes (if added)
+- `arn:aws:dynamodb:us-east-1:*:table/oshawa-user-profiles` - User profile data
+- `arn:aws:dynamodb:us-east-1:*:table/oshawa-user-profiles/index/*` - Profile indexes (if added)
+- `arn:aws:dynamodb:us-east-1:*:table/oshawa-certifications` - Certification requests
+- `arn:aws:dynamodb:us-east-1:*:table/oshawa-certifications/index/*` - userId-index, status-index GSIs
+
+**Policy JSON:**
 ```json
 {
   "Version": "2012-10-17",
@@ -278,16 +297,77 @@ SES_SENDER_EMAIL=noreply@oshawaskills.com
 }
 ```
 
-#### 3. AmazonSESFullAccess (AWS Managed)
-- Send emails via SES
-- Verify email identities
+**Use Cases:**
+- Skills: Create, read, update, delete marketplace listings; scan all skills for admin
+- Profiles: Create/update user profiles; read for certification approval
+- Certifications: Upload requests; query pending/approved via GSI; admin CRUD operations
 
-#### 4. AmazonS3FullAccess (AWS Managed)
-- S3 bucket operations
-- Object upload/download/delete
-- Presigned URL generation
+#### 3. AmazonSESFullAccess (AWS Managed Policy)
+**Purpose:** Send email notifications to users
 
-**Note:** Consider reducing S3/SES to least privilege in production.
+**Permissions Granted:**
+- `ses:SendEmail` - Send formatted emails
+- `ses:SendRawEmail` - Send emails with attachments (not used)
+- `ses:VerifyEmailIdentity` - Verify sender email addresses
+- `ses:GetSendQuota` - Check daily sending limits
+- `ses:GetSendStatistics` - View email delivery metrics
+- Full SES access (all actions on all SES resources)
+
+**Current Usage:**
+- Certification approval emails to users
+- Certification rejection emails with reason
+- Sender: noreply@oshawaskills.com
+
+**Least Privilege Alternative (Recommended for Production):**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "ses:SendEmail",
+      "ses:SendRawEmail"
+    ],
+    "Resource": "arn:aws:ses:us-east-1:603908929131:identity/noreply@oshawaskills.com"
+  }]
+}
+```
+
+#### 4. AmazonS3FullAccess (AWS Managed Policy)
+**Purpose:** Store and retrieve PDF certificates
+
+**Permissions Granted:**
+- `s3:ListBucket` - List objects in buckets
+- `s3:GetObject` - Download/read certificate PDFs
+- `s3:PutObject` - Upload certificate PDFs
+- `s3:DeleteObject` - Remove certificates (rejection, admin delete)
+- `s3:GetBucketCORS` - Read CORS configuration
+- `s3:PutBucketCORS` - Modify CORS rules (not used in Lambda)
+- Full S3 access (all actions on all buckets)
+
+**Current Usage:**
+- Generate presigned URLs for certificate upload (5-min expiry)
+- Generate presigned URLs for certificate viewing (15-min expiry)
+- Delete certificates on rejection or admin deletion
+- Bucket: oshawa-skills-certifications
+
+**Least Privilege Alternative (Recommended for Production):**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject"
+    ],
+    "Resource": "arn:aws:s3:::oshawa-skills-certifications/*"
+  }]
+}
+```
+
+**⚠️ Security Note:** Currently using AWS managed policy for simplicity. For production, replace with least privilege policy above to restrict access to only the certifications bucket.
 
 ---
 
@@ -315,12 +395,23 @@ SES_SENDER_EMAIL=noreply@oshawaskills.com
 **User Groups:**
 
 | Group Name | Description | Members |
-|------------|-------------|---------|
-| Admins | Certification reviewers | nwokehenry90@gmail.com |
+|------------|-------------|---------||
+| Admins | Certification reviewers & content managers | nwokehenry90@gmail.com, fadiloderinu@gmail.com* |
 
 **Custom Attributes:** None (using standard attributes)
 
 **Triggers:** None configured
+
+**Adding Admin Users:**
+After a user registers, add them to the Admins group:
+```powershell
+aws cognito-idp admin-add-user-to-group `
+  --user-pool-id us-east-1_scg9Zyunx `
+  --username <email@example.com> `
+  --group-name Admins
+```
+
+*\*fadiloderinu@gmail.com must register first before being added to Admins group.*
 
 ---
 
