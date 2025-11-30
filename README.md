@@ -240,18 +240,32 @@ npm test
    - Upload PDF file (max 5MB)
 6. View certification status (Pending/Approved/Rejected)
 
-### Test Admin Dashboard (Phase 2)
+### Test Admin Dashboard
 
-1. Sign in with admin account
+1. Sign in with admin account (nwokehenry90@gmail.com or fadiloderinu@gmail.com)
 2. Navigate to `/admin`
-3. View pending certification requests
-4. Click "View PDF" to preview certificate
-5. Click "Approve" to approve certification
-   - User receives approval email
-   - User profile updated with certified badge
-6. Click "Reject" to reject certification
-   - Enter rejection reason
-   - User receives rejection email with reason
+3. **Pending Certifications Section:**
+   - View all pending certification requests
+   - Click "View PDF" to preview certificate
+   - Click "Approve" to approve certification
+     - User receives approval email
+     - User profile updated with certified badge
+     - All user's skills automatically get certified badge
+   - Click "Reject" to reject certification
+     - Enter rejection reason (minimum 10 characters)
+     - User receives rejection email with reason
+     - Certification deleted from system
+4. **Approved Certifications Section:**
+   - View all approved certifications
+   - See approval date and reviewing admin
+   - Delete approved certifications if needed
+     - Removes certified status from user profile
+     - Removes certified badge from all user's skills
+5. **Marketplace Skills Management Section:**
+   - View all skills posted in marketplace
+   - See poster info, category, location, and status
+   - Identify certified providers with badge indicators
+   - Delete any skill from marketplace with confirmation
 
 ### Test with Demo Data
 
@@ -362,19 +376,21 @@ This is a capstone project for the Oshawa community. Contributions are welcome!
 - Search and filter functionality
 - CI/CD pipeline
 
-**Phase 2: Certification System 🔄**
+**Phase 2: Certification System ✅**
 - User profile management
 - Certificate upload (PDF only)
 - Admin review dashboard
 - Email notifications
 - Certified provider badges
+- Approved certifications management
+- Admin marketplace skills management
 
 **Phase 3: Future Enhancements 📝**
-- JWT token validation
 - User ratings and reviews
-- Skill exchange tracking
+- Skill exchange tracking and messaging
 - Analytics dashboard
 - Advanced search filters
+- CloudFront CDN integration
 
 ## 📊 Database Schema
 
@@ -382,9 +398,7 @@ This is a capstone project for the Oshawa community. Contributions are welcome!
 
 **oshawa-skills**
 - Primary Key: `skillId` (String)
-- Attributes: title, description, userName, userEmail, category, location, isAvailable, createdAt, updatedAt
-
-### Phase 2 Tables
+- Attributes: title, description, userName, userEmail, category, location, isAvailable, isCertified, createdAt, updatedAt
 
 **oshawa-user-profiles**
 - Primary Key: `userId` (String - Cognito sub)
@@ -392,19 +406,29 @@ This is a capstone project for the Oshawa community. Contributions are welcome!
 
 **oshawa-certifications**
 - Primary Key: `certificationId` (String)
-- GSI: `userId-index`, `status-index`
+- GSI: `userId-index` (userId-uploadedAt), `status-index` (status-uploadedAt)
 - Attributes: userId, userEmail, userName, skillCategory, certificateType, certificateTitle, issuingOrganization, issueDate, documentUrl, documentKey, fileSize, status, reviewedBy, reviewedAt, rejectionReason, uploadedAt, createdAt
 
 ## 🔒 Security Considerations
 
+- **JWT token authentication** - Bearer tokens validated on all protected endpoints
 - Email and full name are immutable (from Cognito)
 - Certificate files stored in private S3 bucket
-- Pre-signed URLs for secure PDF viewing (15-minute expiry)
-- Admin access controlled via Cognito user groups
+- Pre-signed URLs for secure PDF viewing (15-minute expiry) and upload (5-minute expiry)
+- **Admin access controlled via Cognito user groups** - Backend validates group membership
 - PDF file type validation (client and server-side)
 - Maximum file size: 5 MB
-- CORS enabled for API Gateway
+- CORS enabled for API Gateway and S3 certificate bucket
 - Protected routes require authentication
+- Admin routes require Admins group membership
+- IAM least privilege policies documented for production deployment
+
+## 📚 Documentation
+
+- **AWS-RESOURCES.md** - Complete AWS infrastructure inventory with detailed IAM permissions
+- **AWS-CLI-SETUP.md** - Step-by-step AWS setup instructions
+- **CI-CD-SETUP.md** - GitHub Actions pipeline configuration
+- **DEPLOYMENT-GUIDE.md** - Deployment procedures
 
 ## 📄 License
 
