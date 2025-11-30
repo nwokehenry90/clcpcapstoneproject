@@ -3,8 +3,6 @@ import { DocumentPlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import { certificationApi } from '../services/apiService';
 
-const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'https://your-api-gateway-url.com/prod';
-
 interface CertificationUploadProps {
   onSuccess: () => void;
   onCancel: () => void;
