@@ -51,69 +51,62 @@ npm run build
 
 ## 📋 Features
 
-### ✅ Completed (Phase 1)
+### ✅ Completed
 
 **Marketplace & Skills:**
 - Browse skills marketplace with search and category filters
 - Post new skills with validation (authenticated users only)
-- Skills CRUD operations (backend handlers)
+- Skills CRUD operations with DynamoDB backend
 - Real-time skill discovery
+- **Certified provider badges** - Green "Certified" badge next to verified skill providers
 
-**Authentication:**
-- User registration with email verification
-- Sign in/Sign out with AWS Cognito
+**Authentication & Authorization:**
+- User registration with email verification (AWS Cognito)
+- Sign in/Sign out with secure session management
 - Protected routes for authenticated features
-- Session management
+- **Role-based access control** - Admin group for certification management
+- JWT token authentication throughout the application
 
-**Infrastructure:**
-- Responsive UI with Tailwind CSS
-- DynamoDB integration for data persistence
-- CI/CD pipeline with GitHub Actions
-- Automated AWS deployment
+**User Profile Management:**
+- Complete profile page with personal information
+- Edit phone number, address, and date of birth
+- Change password functionality via Cognito
+- View and manage submitted certifications
+- **Real-time certification status tracking** (pending/approved/rejected counts)
 
-### 🔄 In Progress (Phase 2 - Certification System)
-
-**User Profiles:**
-- Profile management page (/profile)
-- Edit personal information (phone, address, date of birth)
-- Change password functionality
-- View/manage certifications
-
-**Skill Provider Certification:**
+**Skill Provider Certification System:**
 - Upload professional certificates (PDF only, max 5MB)
 - Support for degree, training, and professional certificates
-- Certificate details: title, organization, issue date, skill category
-- Track certification status (pending/approved/rejected)
+- Certificate metadata: title, organization, issue date, skill category
+- Secure S3 storage with pre-signed URLs for viewing
+- Automatic user profile updates upon approval
+- **Certified badge automatically applied to all user's skills**
 
-**Admin Dashboard:**
-- Admin certification review panel (/admin)
-- View pending certification requests
-- Preview uploaded PDF certificates
-- Approve certifications with email notification
-- Reject certifications with reason and email notification
-- Admin role management via Cognito Groups
+**Admin Dashboard (Full-Featured):**
+- **Pending Certifications Review:**
+  - View all pending certification requests
+  - Preview uploaded PDF certificates
+  - Approve certifications (updates user profile, all skills, sends email)
+  - Reject certifications with minimum 10-character reason (deletes cert, sends email)
+- **Approved Certifications Management:**
+  - View all approved certifications in dedicated section
+  - Delete approved certifications (removes certified status from profile and all skills)
+  - Track approval dates and reviewing admin
+- Admin-only access via backend API validation
+- Real-time status updates
 
-**Certified Provider Features:**
-- "✓ Certified" badge display on marketplace
-- Link certifications to specific skill categories
-- Enhanced provider credibility
-- Email notifications for certification decisions
+**Email Notifications:**
+- Certification approval emails to users
+- Certification rejection emails with detailed reason
+- AWS SES integration (requires email verification)
 
-**Additional Infrastructure:**
-- AWS S3 bucket for certificate storage
-- DynamoDB tables for profiles and certifications
-- AWS SES for email notifications
-- Secure PDF viewing with pre-signed URLs
-
-### 📝 Planned (Phase 3 - Future Enhancements)
-
-- Backend JWT token validation
-- Certificate expiry monitoring
-- Bulk certification approval actions
-- Analytics dashboard for admins
-- User ratings and reviews
-- Skill exchange history tracking
-- CloudFront CDN distribution
+**Infrastructure & DevOps:**
+- Responsive UI with Tailwind CSS
+- Complete DynamoDB integration (3 tables with GSIs)
+- **GitHub Actions CI/CD pipeline** - Automated build and deployment
+- S3 static hosting with automated sync
+- Lambda function deployment automation
+- Secure CORS configuration for S3 certificate uploads
 
 ## 🏃 Development Workflow
 

@@ -9,7 +9,7 @@ import {
 } from './handlers/skills';
 import { getProfile, updateProfile } from './handlers/profile';
 import { uploadCertification, getUserCertifications, deleteCertification } from './handlers/certifications';
-import { getPendingCertifications, getApprovedCertifications, approveCertification, rejectCertification, deleteApprovedCertification } from './handlers/admin';
+import { getPendingCertifications, getApprovedCertifications, approveCertification, rejectCertification, deleteApprovedCertification, deleteSkillByAdmin } from './handlers/admin';
 import { healthCheck, corsHandler } from './handlers/health';
 import { logger } from './utils/common';
 
@@ -131,6 +131,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         const certId = deleteMatch[1];
         event.pathParameters = { id: certId };
         return deleteApprovedCertification(event);
+      }
+      
+      // DELETE /api/admin/skills/{id} - Delete any skill from marketplace
+      const deleteSkillMatch = path.match(/^\/api\/admin\/skills\/([^/]+)$/);
+      if (deleteSkillMatch && httpMethod === 'DELETE') {
+        const skillId = deleteSkillMatch[1];
+        event.pathParameters = { id: skillId };
+        return deleteSkillByAdmin(event);
       }
     }
 

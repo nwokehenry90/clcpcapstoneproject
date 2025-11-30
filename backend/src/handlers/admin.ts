@@ -274,3 +274,44 @@ export const rejectCertification = async (event: APIGatewayProxyEvent): Promise<
     return createErrorResponse(500, 'Internal server error');
   }
 };
+
+/**
+ * DELETE /api/admin/skills/:id
+ * Delete any skill from marketplace (admin only)
+ */
+export const deleteSkillByAdmin = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    // Check if user is admin
+    if (!isAdmin(event)) {
+      return createErrorResponse(403, 'Forbidden - Admin access required');
+    }
+
+    const skillId = event.pathParameters?.id;
+    if (!skillId) {
+      return createErrorResponse(400, 'Skill ID is required');
+    }
+
+    // Get the skill first to verify it exists
+    const skill = await skillService.getSkill(skillId);
+    if (!skill) {
+      return createErrorResponse(404, 'Skill not found');
+    }
+
+    // Delete the skill
+    await skillService.deleteSkill(skillId);
+
+    logger.info('Admin deleted skill', { skillId, skillTitle: skill.title, adminEmail: event.requestContext?.authorizer?.claims?.email });
+
+    return createSuccessResponse({
+      message: 'Skill deleted successfully',
+      deletedSkill: {
+        skillId: skill.skillId,
+        title: skill.title,
+        userName: skill.userName
+      }
+    });
+  } catch (error) {
+    logger.error('Error deleting skill by admin', error);
+    return createErrorResponse(500, 'Internal server error');
+  }
+};

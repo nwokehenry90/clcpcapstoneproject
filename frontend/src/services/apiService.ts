@@ -55,6 +55,7 @@ export const adminApi = {
   rejectCertification: (id: string, rejectionReason: string) =>
     apiClient.post(`/api/admin/certifications/${id}/reject`, { rejectionReason }),
   deleteCertification: (id: string) => apiClient.delete(`/api/admin/certifications/${id}`),
+  deleteSkill: (id: string) => apiClient.delete(`/api/admin/skills/${id}`),
 };
 
 export default apiClient;

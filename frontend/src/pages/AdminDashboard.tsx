@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheckIcon, DocumentTextIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { adminApi } from '../services/apiService';
+import { adminApi, skillsApi } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
 const AdminDashboard: React.FC = () => {
@@ -11,6 +11,7 @@ const AdminDashboard: React.FC = () => {
   // State
   const [pendingCerts, setPendingCerts] = useState<any[]>([]);
   const [approvedCerts, setApprovedCerts] = useState<any[]>([]);
+  const [marketplaceSkills, setMarketplaceSkills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -41,6 +42,7 @@ const AdminDashboard: React.FC = () => {
       setPendingCerts(response.data.data || response.data);
       setIsAdmin(true);
       await loadApprovedCertifications();
+      await loadMarketplaceSkills();
     } catch (err: any) {
       if (err.response?.status === 403 || err.response?.status === 401) {
         setError('Access Denied: Admin privileges required');
@@ -79,6 +81,29 @@ const AdminDashboard: React.FC = () => {
       setApprovedCerts(response.data.data || response.data);
     } catch (err: any) {
       console.error('Failed to load approved certifications:', err);
+    }
+  };
+
+  const loadMarketplaceSkills = async () => {
+    try {
+      const response = await skillsApi.getAll();
+      setMarketplaceSkills(response.data.data || response.data);
+    } catch (err: any) {
+      console.error('Failed to load marketplace skills:', err);
+    }
+  };
+
+  const handleDeleteSkill = async (skillId: string, skillTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete the skill "${skillTitle}"? This action cannot be undone.`)) return;
+
+    try {
+      setError('');
+      setSuccess('');
+      await adminApi.deleteSkill(skillId);
+      setSuccess(`Skill "${skillTitle}" deleted successfully.`);
+      loadMarketplaceSkills();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete skill');
     }
   };
 
@@ -374,6 +399,112 @@ const AdminDashboard: React.FC = () => {
                           Delete
                         </button>
                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Marketplace Skills Management Section */}
+      <div className="bg-white shadow rounded-lg overflow-hidden mt-8">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <DocumentTextIcon className="w-6 h-6 text-purple-600" />
+            Marketplace Skills Management
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            View and manage all skills posted in the marketplace
+          </p>
+        </div>
+
+        {marketplaceSkills.length === 0 ? (
+          <div className="px-6 py-12 text-center text-gray-500">
+            <DocumentTextIcon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+            <p>No skills found in the marketplace</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Skill
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Posted By
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Posted Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {marketplaceSkills.map((skill) => (
+                  <tr key={skill.skillId} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{skill.title}</div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {skill.description}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{skill.userName}</div>
+                        <div className="text-sm text-gray-500">{skill.userEmail}</div>
+                        {skill.isCertified && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mt-1">
+                            Certified
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {skill.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {skill.location || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {skill.isAvailable ? (
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          Available
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                          Unavailable
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(skill.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleDeleteSkill(skill.skillId, skill.title)}
+                        className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
+                      >
+                        <XCircleIcon className="w-4 h-4" />
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
