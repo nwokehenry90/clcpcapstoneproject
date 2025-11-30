@@ -219,6 +219,7 @@ SES_SENDER_EMAIL=noreply@oshawaskills.com
 | POST | /api/admin/certifications/{id}/approve | approveCertification | Admin |
 | POST | /api/admin/certifications/{id}/reject | rejectCertification | Admin |
 | DELETE | /api/admin/certifications/{id} | deleteApprovedCertification | Admin |
+| DELETE | /api/admin/skills/{id} | deleteSkillByAdmin | Admin |
 
 **CORS:** Enabled for all origins  
 **Integration:** Lambda Proxy  

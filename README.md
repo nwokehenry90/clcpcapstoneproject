@@ -82,7 +82,7 @@ npm run build
 - Automatic user profile updates upon approval
 - **Certified badge automatically applied to all user's skills**
 
-**Admin Dashboard (Full-Featured):**
+**Admin Dashboard (Full Content Management):**
 - **Pending Certifications Review:**
   - View all pending certification requests
   - Preview uploaded PDF certificates
@@ -92,6 +92,12 @@ npm run build
   - View all approved certifications in dedicated section
   - Delete approved certifications (removes certified status from profile and all skills)
   - Track approval dates and reviewing admin
+- **Marketplace Skills Management:**
+  - View all skills posted in the marketplace
+  - See skill details: title, description, poster info, category, location, status
+  - Identify certified providers with badge indicators
+  - Delete any skill from the marketplace with confirmation
+  - Full CRUD operations on marketplace content
 - Admin-only access via backend API validation
 - Real-time status updates
 
