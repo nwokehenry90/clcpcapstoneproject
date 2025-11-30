@@ -122,8 +122,14 @@ export const approveCertification = async (event: APIGatewayProxyEvent): Promise
  */
 export const rejectCertification = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
+    logger.info('Reject certification called', { certId: event.pathParameters?.id });
+    
     // Check if user is admin
-    if (!isAdmin(event)) {
+    const adminCheck = isAdmin(event);
+    logger.info('Admin check result', { isAdmin: adminCheck });
+    
+    if (!adminCheck) {
+      logger.warn('Non-admin user attempted to reject certification');
       return createErrorResponse(403, 'Forbidden - Admin access required');
     }
 
@@ -131,15 +137,20 @@ export const rejectCertification = async (event: APIGatewayProxyEvent): Promise<
     const certificationId = event.pathParameters?.id;
 
     if (!certificationId) {
+      logger.error('Certification ID missing');
       return createErrorResponse(400, 'Certification ID is required');
     }
 
+    logger.info('Parsing request body');
     const reviewRequest: CertificationReviewRequest = parseBody(event);
+    logger.info('Request body parsed', { hasReason: !!reviewRequest.rejectionReason });
 
     if (!reviewRequest.rejectionReason || reviewRequest.rejectionReason.trim().length < 10) {
+      logger.error('Rejection reason invalid', { reason: reviewRequest.rejectionReason });
       return createErrorResponse(400, 'Rejection reason is required (minimum 10 characters)');
     }
 
+    logger.info('Fetching certification from DB');
     // Get certification
     const certification = await certificationService.getCertification(certificationId);
     if (!certification) {
