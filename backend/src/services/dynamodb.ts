@@ -8,7 +8,7 @@ import {
   QueryCommand,
   ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { getEnvVar, getCurrentTimestamp, generateId } from '../utils/common';
+import { getEnvVar, getCurrentTimestamp, generateId, logger } from '../utils/common';
 import { UserProfile, Certification } from '../types';
 
 const client = new DynamoDBClient({ region: getEnvVar('AWS_REGION', 'us-east-1') });
@@ -91,6 +91,28 @@ export class SkillService {
     }));
   }
 
+  async updateUserSkillsCertification(userEmail: string, isCertified: boolean) {
+    // Scan for all skills by this user
+    const params = {
+      TableName: this.tableName,
+      FilterExpression: 'userEmail = :email',
+      ExpressionAttributeValues: {
+        ':email': userEmail,
+      },
+    };
+
+    const result = await docClient.send(new ScanCommand(params));
+    const skills = result.Items || [];
+
+    // Update each skill with certified status
+    const updatePromises = skills.map(skill =>
+      this.updateSkill(skill.skillId, { isCertified })
+    );
+
+    await Promise.all(updatePromises);
+    logger.info(`Updated ${skills.length} skills for ${userEmail} with isCertified=${isCertified}`);
+  }
+
   async getAllSkills(category?: string, limit: number = 50, lastKey?: string) {
     let params: any = {
       TableName: this.tableName,
@@ -117,27 +139,8 @@ export class SkillService {
 
     const result = await docClient.send(new ScanCommand(params));
     
-    // Enrich skills with profile data (isCertified status)
-    const skills = result.Items || [];
-    const enrichedSkills = await Promise.all(skills.map(async (skill: any) => {
-      try {
-        const profileParams = {
-          TableName: getEnvVar('PROFILES_TABLE'),
-          Key: { userId: skill.userId },
-        };
-        const profileResult = await docClient.send(new GetCommand(profileParams));
-        return {
-          ...skill,
-          isCertified: profileResult.Item?.isCertified || false,
-        };
-      } catch (error) {
-        // If profile fetch fails, return skill without certification status
-        return { ...skill, isCertified: false };
-      }
-    }));
-    
     return {
-      items: enrichedSkills,
+      items: result.Items || [],
       lastEvaluatedKey: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
     };
   }

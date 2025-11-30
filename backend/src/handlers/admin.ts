@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { CertificationService, ProfileService } from '../services/dynamodb';
+import { CertificationService, ProfileService, SkillService } from '../services/dynamodb';
 import { S3Service } from '../services/s3';
 import { SESService } from '../services/ses';
 import { 
@@ -14,6 +14,7 @@ import { CertificationReviewRequest } from '../types';
 
 const certificationService = new CertificationService();
 const profileService = new ProfileService();
+const skillService = new SkillService();
 const s3Service = new S3Service();
 const sesService = new SESService();
 
@@ -91,6 +92,9 @@ export const approveCertification = async (event: APIGatewayProxyEvent): Promise
         isCertified: true,
         certifiedSkills,
       });
+      
+      // Update all user's skills with certified status
+      await skillService.updateUserSkillsCertification(certification.userEmail, true);
     }
 
     // Send approval email
