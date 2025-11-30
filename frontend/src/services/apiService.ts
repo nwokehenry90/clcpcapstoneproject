@@ -50,9 +50,11 @@ export const certificationApi = {
 // Admin API
 export const adminApi = {
   getPendingCertifications: () => apiClient.get('/api/admin/certifications'),
+  getApprovedCertifications: () => apiClient.get('/api/admin/certifications/approved'),
   approveCertification: (id: string) => apiClient.post(`/api/admin/certifications/${id}/approve`),
   rejectCertification: (id: string, rejectionReason: string) =>
     apiClient.post(`/api/admin/certifications/${id}/reject`, { rejectionReason }),
+  deleteCertification: (id: string) => apiClient.delete(`/api/admin/certifications/${id}`),
 };
 
 export default apiClient;

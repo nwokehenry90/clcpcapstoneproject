@@ -9,7 +9,7 @@ import {
 } from './handlers/skills';
 import { getProfile, updateProfile } from './handlers/profile';
 import { uploadCertification, getUserCertifications, deleteCertification } from './handlers/certifications';
-import { getPendingCertifications, approveCertification, rejectCertification } from './handlers/admin';
+import { getPendingCertifications, getApprovedCertifications, approveCertification, rejectCertification, deleteApprovedCertification } from './handlers/admin';
 import { healthCheck, corsHandler } from './handlers/health';
 import { logger } from './utils/common';
 
@@ -104,6 +104,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return getPendingCertifications(event);
       }
       
+      // GET /api/admin/certifications/approved - Get approved certifications
+      if (httpMethod === 'GET' && path === '/api/admin/certifications/approved') {
+        return getApprovedCertifications(event);
+      }
+      
       // POST /api/admin/certifications/{id}/approve
       const approveMatch = path.match(/^\/api\/admin\/certifications\/([^/]+)\/approve$/);
       if (approveMatch && httpMethod === 'POST') {
@@ -118,6 +123,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         const certId = rejectMatch[1];
         event.pathParameters = { id: certId };
         return rejectCertification(event);
+      }
+      
+      // DELETE /api/admin/certifications/{id} - Delete approved certification
+      const deleteMatch = path.match(/^\/api\/admin\/certifications\/([^/]+)$/);
+      if (deleteMatch && httpMethod === 'DELETE') {
+        const certId = deleteMatch[1];
+        event.pathParameters = { id: certId };
+        return deleteApprovedCertification(event);
       }
     }
 

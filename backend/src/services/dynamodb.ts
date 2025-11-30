@@ -315,6 +315,23 @@ export class CertificationService {
     return result.Items as Certification[] || [];
   }
 
+  async getApprovedCertifications(): Promise<Certification[]> {
+    const result = await docClient.send(new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'status-index',
+      KeyConditionExpression: '#status = :status',
+      ExpressionAttributeNames: {
+        '#status': 'status',
+      },
+      ExpressionAttributeValues: {
+        ':status': 'approved',
+      },
+      ScanIndexForward: false, // Newest first
+    }));
+
+    return result.Items as Certification[] || [];
+  }
+
   async updateCertification(certificationId: string, updates: Partial<Certification>): Promise<Certification> {
     const updateExpressions: string[] = [];
     const expressionAttributeNames: Record<string, string> = {};

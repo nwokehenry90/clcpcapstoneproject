@@ -50,6 +50,86 @@ export const getPendingCertifications = async (event: APIGatewayProxyEvent): Pro
 };
 
 /**
+ * GET /api/admin/certifications/approved
+ * Get all approved certifications (admin only)
+ */
+export const getApprovedCertifications = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    // Check if user is admin
+    if (!isAdmin(event)) {
+      return createErrorResponse(403, 'Forbidden - Admin access required');
+    }
+
+    const certifications = await certificationService.getApprovedCertifications();
+
+    // Generate download URLs for PDFs
+    const certificationsWithUrls = await Promise.all(
+      certifications.map(async (cert) => {
+        if (cert.documentKey) {
+          const downloadUrl = await s3Service.getCertDownloadUrl(cert.documentKey);
+          return { ...cert, documentUrl: downloadUrl };
+        }
+        return cert;
+      })
+    );
+
+    return createSuccessResponse(certificationsWithUrls);
+  } catch (error) {
+    logger.error('Error getting approved certifications', error);
+    return createErrorResponse(500, 'Internal server error');
+  }
+};
+
+/**
+ * DELETE /api/admin/certifications/:id
+ * Delete an approved certification (admin only)
+ */
+export const deleteApprovedCertification = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    // Check if user is admin
+    if (!isAdmin(event)) {
+      return createErrorResponse(403, 'Forbidden - Admin access required');
+    }
+
+    const certificationId = event.pathParameters?.id;
+    if (!certificationId) {
+      return createErrorResponse(400, 'Certification ID is required');
+    }
+
+    // Get certification
+    const certification = await certificationService.getCertification(certificationId);
+    if (!certification) {
+      return createErrorResponse(404, 'Certification not found');
+    }
+
+    // Delete from S3
+    if (certification.documentKey) {
+      await s3Service.deleteCertification(certification.documentKey);
+    }
+
+    // Delete from DynamoDB
+    await certificationService.deleteCertification(certificationId);
+
+    // Update user's skills to remove certified status
+    await skillService.updateUserSkillsCertification(certification.userEmail, false);
+
+    // Update user profile to remove certified status
+    const profile = await profileService.getProfile(certification.userId);
+    if (profile) {
+      await profileService.updateProfile(certification.userId, {
+        isCertified: false,
+        certifiedSkills: [],
+      });
+    }
+
+    return createSuccessResponse({ message: 'Certification deleted successfully' });
+  } catch (error) {
+    logger.error('Error deleting certification', error);
+    return createErrorResponse(500, 'Internal server error');
+  }
+};
+
+/**
  * POST /api/admin/certifications/:id/approve
  * Approve a certification (admin only)
  */
