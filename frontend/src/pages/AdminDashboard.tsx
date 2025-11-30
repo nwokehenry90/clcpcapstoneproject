@@ -87,7 +87,9 @@ const AdminDashboard: React.FC = () => {
   const loadMarketplaceSkills = async () => {
     try {
       const response = await skillsApi.getAll();
-      setMarketplaceSkills(response.data.data || response.data);
+      const data = response.data.data || response.data;
+      // Backend returns { skills: [...], lastEvaluatedKey, total }
+      setMarketplaceSkills(data.skills || data);
     } catch (err: any) {
       console.error('Failed to load marketplace skills:', err);
     }
