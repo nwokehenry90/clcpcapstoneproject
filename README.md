@@ -6,9 +6,12 @@ A cloud-native peer-to-peer skill sharing web application for the Oshawa communi
 
 - **Frontend**: React 18 (TypeScript) - Static hosting on AWS S3
 - **Backend**: Node.js Lambda functions - Serverless API
-- **Database**: DynamoDB - NoSQL storage for skills
+- **Database**: DynamoDB - NoSQL storage (skills, profiles, certifications)
+- **Storage**: AWS S3 - Certificate document storage (PDF)
 - **API**: API Gateway - RESTful endpoints
-- **Auth**: AWS Cognito User Pool - Email-based authentication
+- **Auth**: AWS Cognito User Pool - Email-based authentication with role groups
+- **Email**: AWS SES - Certification approval/rejection notifications
+- **CI/CD**: GitHub Actions - Automated deployment pipeline
 
 ## 🚀 Quick Start
 
@@ -48,31 +51,69 @@ npm run build
 
 ## 📋 Features
 
-### ✅ Completed
+### ✅ Completed (Phase 1)
 
+**Marketplace & Skills:**
 - Browse skills marketplace with search and category filters
 - Post new skills with validation (authenticated users only)
+- Skills CRUD operations (backend handlers)
+- Real-time skill discovery
+
+**Authentication:**
 - User registration with email verification
 - Sign in/Sign out with AWS Cognito
 - Protected routes for authenticated features
-- Responsive UI with Tailwind CSS
-- Skills CRUD operations (backend handlers)
-- DynamoDB integration for data persistence
+- Session management
 
-### 🔄 In Progress
+**Infrastructure:**
+- Responsive UI with Tailwind CSS
+- DynamoDB integration for data persistence
+- CI/CD pipeline with GitHub Actions
+- Automated AWS deployment
+
+### 🔄 In Progress (Phase 2 - Certification System)
+
+**User Profiles:**
+- Profile management page (/profile)
+- Edit personal information (phone, address, date of birth)
+- Change password functionality
+- View/manage certifications
+
+**Skill Provider Certification:**
+- Upload professional certificates (PDF only, max 5MB)
+- Support for degree, training, and professional certificates
+- Certificate details: title, organization, issue date, skill category
+- Track certification status (pending/approved/rejected)
+
+**Admin Dashboard:**
+- Admin certification review panel (/admin)
+- View pending certification requests
+- Preview uploaded PDF certificates
+- Approve certifications with email notification
+- Reject certifications with reason and email notification
+- Admin role management via Cognito Groups
+
+**Certified Provider Features:**
+- "✓ Certified" badge display on marketplace
+- Link certifications to specific skill categories
+- Enhanced provider credibility
+- Email notifications for certification decisions
+
+**Additional Infrastructure:**
+- AWS S3 bucket for certificate storage
+- DynamoDB tables for profiles and certifications
+- AWS SES for email notifications
+- Secure PDF viewing with pre-signed URLs
+
+### 📝 Planned (Phase 3 - Future Enhancements)
 
 - Backend JWT token validation
-- Email contact system integration
-- User profile management
-
-### 📝 Pending
-
-- Manual AWS deployment documentation
-- Lambda function deployment scripts
-- API Gateway configuration guide
-- DynamoDB table setup instructions
-- S3 static hosting configuration
-- CloudFront distribution (optional)
+- Certificate expiry monitoring
+- Bulk certification approval actions
+- Analytics dashboard for admins
+- User ratings and reviews
+- Skill exchange history tracking
+- CloudFront CDN distribution
 
 ## 🏃 Development Workflow
 
@@ -105,27 +146,45 @@ npm test
 ```
 ├── frontend/               # React application
 │   ├── src/
-│   │   ├── components/     # Reusable components (Layout, ProtectedRoute)
-│   │   ├── pages/          # Page components (Login, Register, SkillsMarketplace, PostSkill)
-│   │   ├── services/       # API services (authService)
+│   │   ├── components/     # Reusable components (Layout, ProtectedRoute, CertifiedBadge)
+│   │   ├── pages/          # Page components
+│   │   │   ├── Login.tsx                # Sign in page
+│   │   │   ├── Register.tsx             # Registration with email verification
+│   │   │   ├── SkillsMarketplace.tsx    # Browse all skills
+│   │   │   ├── PostSkill.tsx            # Create new skill (protected)
+│   │   │   ├── Profile.tsx              # User profile management (Phase 2)
+│   │   │   └── AdminDashboard.tsx       # Certification review (Phase 2)
+│   │   ├── services/       # API services (authService, apiService)
 │   │   ├── contexts/       # React contexts (AuthContext)
 │   │   └── App.tsx         # Main app with routing
 │   └── package.json
 │
 ├── backend/                # Lambda functions
 │   ├── src/
-│   │   ├── handlers/       # Lambda handlers (skills.ts)
-│   │   ├── services/       # Business logic (dynamodb.ts)
+│   │   ├── handlers/       # Lambda handlers
+│   │   │   ├── skills.ts              # Skills CRUD operations
+│   │   │   ├── profile.ts             # User profile management (Phase 2)
+│   │   │   ├── certifications.ts      # Certification upload/retrieval (Phase 2)
+│   │   │   └── admin.ts               # Admin certification review (Phase 2)
+│   │   ├── services/       # Business logic
+│   │   │   ├── dynamodb.ts            # DynamoDB operations
+│   │   │   ├── s3.ts                  # S3 file operations (Phase 2)
+│   │   │   └── ses.ts                 # Email notifications (Phase 2)
 │   │   └── index.ts        # Main Lambda entry point
 │   └── package.json
 │
 ├── shared/                 # Shared TypeScript types
 │   └── src/
-│       └── types.ts        # Common interfaces (Skill, AuthUser, etc.)
+│       └── types.ts        # Common interfaces (Skill, Profile, Certification)
 │
-└── docs/                   # Documentation (to be added)
-    ├── aws-setup.md
-    └── deployment.md
+├── docs/                   # Documentation
+│   ├── AWS-CLI-SETUP.md
+│   ├── CI-CD-SETUP.md
+│   └── DEPLOYMENT-GUIDE.md
+│
+└── .github/
+    └── workflows/
+        └── deploy.yml      # CI/CD pipeline configuration
 ```
 
 ## 🛠️ Technology Stack
@@ -145,11 +204,12 @@ npm test
 - Serverless architecture
 
 ### AWS Services
-- **Cognito User Pool**: User authentication and management
+- **Cognito User Pool**: User authentication and management with admin groups
 - **Lambda**: Serverless compute for API
 - **API Gateway**: REST API endpoints
-- **DynamoDB**: NoSQL database for skills
-- **S3**: Static website hosting
+- **DynamoDB**: NoSQL database for skills, profiles, and certifications
+- **S3**: Static website hosting + certificate document storage
+- **SES**: Email notifications for certification decisions
 - **CloudFront** (optional): CDN for performance
 
 ## 🧪 Testing the App
@@ -165,54 +225,187 @@ npm test
 7. Browse skills marketplace
 8. Click "Post a Skill" (requires authentication)
 
+### Test Profile & Certification Flow (Phase 2)
+
+1. Sign in to your account
+2. Click "Profile" in navigation
+3. Update personal information:
+   - Add phone number
+   - Add residential address
+   - Set date of birth
+4. Change password (via Cognito)
+5. Upload certification:
+   - Select certificate type (Degree/Training/Professional)
+   - Enter certificate title and organization
+   - Select issue date and skill category
+   - Upload PDF file (max 5MB)
+6. View certification status (Pending/Approved/Rejected)
+
+### Test Admin Dashboard (Phase 2)
+
+1. Sign in with admin account
+2. Navigate to `/admin`
+3. View pending certification requests
+4. Click "View PDF" to preview certificate
+5. Click "Approve" to approve certification
+   - User receives approval email
+   - User profile updated with certified badge
+6. Click "Reject" to reject certification
+   - Enter rejection reason
+   - User receives rejection email with reason
+
 ### Test with Demo Data
 
 The frontend includes demo skills data that displays when the API is unavailable. This allows you to test the UI without deploying the backend.
 
 ## 📦 Deployment to AWS
 
-### Option 1: Automated Deployment (Recommended)
+### Automated CI/CD Deployment (Recommended)
 
-Deploy everything with one command:
+Every push to `main` branch automatically deploys via GitHub Actions:
 
-```powershell
-.\deploy-aws.ps1
-```
+1. **Configure GitHub Secrets** (one-time setup):
+   ```
+   AWS_ACCESS_KEY_ID
+   AWS_SECRET_ACCESS_KEY
+   REACT_APP_COGNITO_USER_POOL_ID
+   REACT_APP_COGNITO_CLIENT_ID
+   REACT_APP_API_ENDPOINT
+   ```
 
-This script will:
-- ✅ Create Cognito User Pool
-- ✅ Create DynamoDB table
-- ✅ Create IAM role and policies
-- ✅ Build and deploy Lambda function
-- ✅ Create API Gateway
-- ✅ Create S3 bucket for hosting
-- ✅ Build and deploy frontend
-- ✅ Configure all connections
+2. **Push to main branch**:
+   ```bash
+   git add .
+   git commit -m "Deploy changes"
+   git push origin main
+   ```
 
-**Time**: ~10-15 minutes
+3. **Monitor deployment**:
+   - GitHub Actions automatically builds and deploys both backend and frontend
+   - View progress at: https://github.com/nwokehenry90/clcpcapstoneproject/actions
 
-### Option 2: Manual Step-by-Step
+**See:** `CI-CD-QUICKSTART.md` for detailed setup instructions
 
-Follow the detailed guide: `DEPLOYMENT-GUIDE.md`
+### Manual Deployment
 
-### Option 3: Individual Components
+Follow step-by-step guides:
+- **Full Setup**: `docs/AWS-CLI-SETUP.md` - Complete AWS infrastructure setup
+- **Quick Deploy**: `DEPLOYMENT-GUIDE.md` - Fast deployment guide
+- **CI/CD Setup**: `docs/CI-CD-SETUP.md` - Configure GitHub Actions
 
-Deploy specific components:
+### Phase 2 Infrastructure Setup
 
-```powershell
-# Just build Lambda package
-.\deploy-lambda.ps1
+**Additional AWS resources for certification system:**
 
-# Deploy without creating Cognito
-.\deploy-aws.ps1 -SkipCognito
+1. **Create S3 Bucket for Certificates**:
+   ```bash
+   aws s3api create-bucket \
+     --bucket oshawa-skills-certifications \
+     --region us-east-1
+   ```
 
-# Deploy only frontend
-.\deploy-aws.ps1 -SkipCognito -SkipDynamoDB -SkipLambda -SkipAPI -SkipS3
-```
+2. **Create DynamoDB Tables**:
+   ```bash
+   # User profiles table
+   aws dynamodb create-table \
+     --table-name oshawa-user-profiles \
+     --attribute-definitions AttributeName=userId,AttributeType=S \
+     --key-schema AttributeName=userId,KeyType=HASH \
+     --billing-mode PAY_PER_REQUEST
+
+   # Certifications table
+   aws dynamodb create-table \
+     --table-name oshawa-certifications \
+     --attribute-definitions \
+       AttributeName=certificationId,AttributeType=S \
+       AttributeName=userId,AttributeType=S \
+       AttributeName=status,AttributeType=S \
+       AttributeName=uploadedAt,AttributeType=S \
+     --key-schema AttributeName=certificationId,KeyType=HASH \
+     --global-secondary-indexes \
+       IndexName=userId-index,KeySchema=[{AttributeName=userId,KeyType=HASH},{AttributeName=uploadedAt,KeyType=RANGE}],Projection={ProjectionType=ALL} \
+       IndexName=status-index,KeySchema=[{AttributeName=status,KeyType=HASH},{AttributeName=uploadedAt,KeyType=RANGE}],Projection={ProjectionType=ALL} \
+     --billing-mode PAY_PER_REQUEST
+   ```
+
+3. **Create Cognito Admin Group**:
+   ```bash
+   aws cognito-idp create-group \
+     --user-pool-id us-east-1_scg9Zyunx \
+     --group-name Admins \
+     --description "Administrators who can approve certifications"
+
+   # Add yourself to admin group
+   aws cognito-idp admin-add-user-to-group \
+     --user-pool-id us-east-1_scg9Zyunx \
+     --username your-email@example.com \
+     --group-name Admins
+   ```
+
+4. **Configure AWS SES for Emails**:
+   ```bash
+   # Verify sender email
+   aws ses verify-email-identity --email-address noreply@oshawaskills.com
+
+   # Move out of sandbox (production)
+   # Submit request via AWS Console: SES > Account Dashboard > Request Production Access
+   ```
 
 ## 🤝 Contributing
 
 This is a capstone project for the Oshawa community. Contributions are welcome!
+
+### Development Roadmap
+
+**Phase 1: Core Marketplace ✅**
+- User authentication and registration
+- Skills posting and browsing
+- Search and filter functionality
+- CI/CD pipeline
+
+**Phase 2: Certification System 🔄**
+- User profile management
+- Certificate upload (PDF only)
+- Admin review dashboard
+- Email notifications
+- Certified provider badges
+
+**Phase 3: Future Enhancements 📝**
+- JWT token validation
+- User ratings and reviews
+- Skill exchange tracking
+- Analytics dashboard
+- Advanced search filters
+
+## 📊 Database Schema
+
+### Current Tables
+
+**oshawa-skills**
+- Primary Key: `skillId` (String)
+- Attributes: title, description, userName, userEmail, category, location, isAvailable, createdAt, updatedAt
+
+### Phase 2 Tables
+
+**oshawa-user-profiles**
+- Primary Key: `userId` (String - Cognito sub)
+- Attributes: email, name, phoneNumber, address, dateOfBirth, isCertified, certifiedSkills, createdAt, updatedAt
+
+**oshawa-certifications**
+- Primary Key: `certificationId` (String)
+- GSI: `userId-index`, `status-index`
+- Attributes: userId, userEmail, userName, skillCategory, certificateType, certificateTitle, issuingOrganization, issueDate, documentUrl, documentKey, fileSize, status, reviewedBy, reviewedAt, rejectionReason, uploadedAt, createdAt
+
+## 🔒 Security Considerations
+
+- Email and full name are immutable (from Cognito)
+- Certificate files stored in private S3 bucket
+- Pre-signed URLs for secure PDF viewing (15-minute expiry)
+- Admin access controlled via Cognito user groups
+- PDF file type validation (client and server-side)
+- Maximum file size: 5 MB
+- CORS enabled for API Gateway
+- Protected routes require authentication
 
 ## 📄 License
 
