@@ -8,7 +8,6 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline';
 import CertifiedBadge from '../components/CertifiedBadge';
-import { profileApi } from '../services/apiService';
 
 const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'https://your-api-gateway-url.com/prod';
 
@@ -31,7 +30,7 @@ const SkillsMarketplace: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [certifiedUsers, setCertifiedUsers] = useState<Set<string>>(new Set());
+  const [certifiedUsers] = useState<Set<string>>(new Set());
 
   const categories = [
     'all',
@@ -49,7 +48,6 @@ const SkillsMarketplace: React.FC = () => {
 
   useEffect(() => {
     fetchSkills();
-    loadCertifiedUsers();
   }, []);
 
   const fetchSkills = async () => {
@@ -126,16 +124,6 @@ const SkillsMarketplace: React.FC = () => {
       ]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadCertifiedUsers = async () => {
-    try {
-      // This would ideally fetch all certified provider emails from backend
-      // For now, we'll check certification status when displaying each skill
-      // A better approach would be to add isCertified flag to the skills API response
-    } catch (err) {
-      console.error('Failed to load certified users:', err);
     }
   };
 

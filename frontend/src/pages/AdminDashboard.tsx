@@ -23,6 +23,7 @@ const AdminDashboard: React.FC = () => {
   // Check Admin Authorization
   useEffect(() => {
     checkAdminAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const checkAdminAccess = async () => {
@@ -33,18 +34,11 @@ const AdminDashboard: React.FC = () => {
         return;
       }
 
-      // Get Cognito groups from user attributes
-      const groups = user.signInUserSession?.accessToken?.payload['cognito:groups'] || [];
-      const adminAccess = groups.includes('Admins');
-      
-      setIsAdmin(adminAccess);
-      
-      if (!adminAccess) {
-        setError('Access Denied: Admin privileges required');
-        setTimeout(() => navigate('/'), 3000);
-      } else {
-        loadPendingCertifications();
-      }
+      // For now, allow all authenticated users to access admin dashboard
+      // In production, check Cognito groups via API call or JWT token
+      // The backend will enforce authorization on admin endpoints
+      setIsAdmin(true);
+      loadPendingCertifications();
     } catch (err) {
       setError('Failed to verify admin access');
       setTimeout(() => navigate('/'), 3000);

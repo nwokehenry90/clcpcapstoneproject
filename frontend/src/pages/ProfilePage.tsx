@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserIcon, PhoneIcon, MapPinIcon, CalendarIcon, KeyIcon } from '@heroicons/react/24/outline';
+import { UserIcon, PhoneIcon, MapPinIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { profileApi, certificationApi } from '../services/apiService';
 import CertificationUpload from '../components/CertificationUpload';
 import CertificationCard from '../components/CertificationCard';
