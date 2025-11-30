@@ -246,7 +246,7 @@ const SkillsMarketplace: React.FC = () => {
                 <span className="text-sm text-gray-700">{skill.userName}</span>
                 {/* Show certified badge if user is certified */}
                 {skill.isCertified && (
-                  <CertifiedBadge size="small" showText={false} />
+                  <CertifiedBadge size="small" showText={true} />
                 )}
               </div>
 

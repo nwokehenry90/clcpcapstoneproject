@@ -20,9 +20,9 @@ const CertifiedBadge: React.FC<CertifiedBadgeProps> = ({ size = 'medium', showTe
   };
 
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-      <CheckCircleIcon className={`${sizes[size]} text-blue-600`} />
-      {showText && <span className={`${textSizes[size]} font-medium`}>Certified</span>}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200">
+      <CheckCircleIcon className={`${sizes[size]} text-green-600`} />
+      {showText && <span className={`${textSizes[size]} font-semibold text-green-700`}>Certified</span>}
     </span>
   );
 };
