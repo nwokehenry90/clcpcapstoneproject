@@ -25,6 +25,16 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Skills API
+export const skillsApi = {
+  getAll: () => apiClient.get('/api/skills'),
+  getById: (id: string) => apiClient.get(`/api/skills/${id}`),
+  create: (data: any) => apiClient.post('/api/skills', data),
+  update: (id: string, data: any) => apiClient.put(`/api/skills/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/api/skills/${id}`),
+  search: (query: string) => apiClient.get(`/api/skills/search?q=${encodeURIComponent(query)}`),
+};
+
 // Profile API
 export const profileApi = {
   getProfile: () => apiClient.get('/api/profile'),
