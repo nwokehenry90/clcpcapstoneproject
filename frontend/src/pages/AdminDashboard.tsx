@@ -34,14 +34,22 @@ const AdminDashboard: React.FC = () => {
         return;
       }
 
-      // For now, allow all authenticated users to access admin dashboard
-      // In production, check Cognito groups via API call or JWT token
-      // The backend will enforce authorization on admin endpoints
+      // Try to fetch pending certifications - backend will return 403 if not admin
+      setLoading(true);
+      const response = await adminApi.getPendingCertifications();
+      setPendingCerts(response.data);
       setIsAdmin(true);
-      loadPendingCertifications();
-    } catch (err) {
-      setError('Failed to verify admin access');
-      setTimeout(() => navigate('/'), 3000);
+    } catch (err: any) {
+      if (err.response?.status === 403 || err.response?.status === 401) {
+        setError('Access Denied: Admin privileges required');
+        setIsAdmin(false);
+        setTimeout(() => navigate('/'), 3000);
+      } else {
+        setError('Failed to verify admin access');
+        setTimeout(() => navigate('/'), 3000);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +59,13 @@ const AdminDashboard: React.FC = () => {
       const response = await adminApi.getPendingCertifications();
       setPendingCerts(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load certifications');
+      if (err.response?.status === 403) {
+        setError('Access Denied: Admin privileges required');
+        setIsAdmin(false);
+        setTimeout(() => navigate('/'), 3000);
+      } else {
+        setError(err.response?.data?.message || 'Failed to load certifications');
+      }
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import {
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { adminApi } from '../services/apiService';
 
 interface LayoutProps {
   children: ReactNode;
@@ -34,17 +35,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'My Profile', href: '/profile', icon: UserCircleIcon, requiresAuth: true },
   ];
 
-  // Simple admin check - can be enhanced later with actual Cognito groups check
+  // Check if user is admin by attempting to fetch admin data
   const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
-    // Check if user has admin role from Cognito groups
-    if (user) {
-      // This will be populated when user logs in through Cognito
-      // For now, set to false - will be updated when backend integration is complete
-      setIsAdmin(false);
-    }
-  }, [user]);
+    const checkAdminStatus = async () => {
+      if (user && isAuthenticated) {
+        try {
+          // Try to fetch admin data - if successful, user is admin
+          await adminApi.getPendingCertifications();
+          setIsAdmin(true);
+        } catch {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    checkAdminStatus();
+  }, [user, isAuthenticated]);
 
   const isActive = (path: string) => location.pathname === path;
 
