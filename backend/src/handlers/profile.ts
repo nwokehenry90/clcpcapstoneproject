@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import jwt from 'jsonwebtoken';
 import { ProfileService } from '../services/dynamodb';
 import { 
   createSuccessResponse, 
@@ -26,8 +27,21 @@ export const getProfile = async (event: APIGatewayProxyEvent): Promise<APIGatewa
     
     // If profile doesn't exist, create a default one
     if (!profile) {
-      const email = event.requestContext.authorizer?.claims?.email || '';
-      const name = event.requestContext.authorizer?.claims?.name || '';
+      // Extract email and name from JWT token
+      let email = '';
+      let name = '';
+      
+      const authHeader = event.headers?.Authorization || event.headers?.authorization;
+      if (authHeader) {
+        try {
+          const token = authHeader.replace(/^Bearer\s+/i, '');
+          const decoded = jwt.decode(token) as any;
+          email = decoded?.email || '';
+          name = decoded?.name || decoded?.['cognito:username'] || '';
+        } catch (error) {
+          logger.error('Error decoding token for profile creation', error);
+        }
+      }
       
       profile = await profileService.createProfile({
         userId,

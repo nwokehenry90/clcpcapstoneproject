@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import jwt from 'jsonwebtoken';
 import { CertificationService, ProfileService } from '../services/dynamodb';
 import { S3Service } from '../services/s3';
 import { 
@@ -26,8 +27,21 @@ export const uploadCertification = async (event: APIGatewayProxyEvent): Promise<
       return createErrorResponse(401, 'Unauthorized');
     }
 
-    const userEmail = event.requestContext.authorizer?.claims?.email || '';
-    const userName = event.requestContext.authorizer?.claims?.name || '';
+    // Extract email and name from JWT token
+    let userEmail = '';
+    let userName = '';
+    
+    const authHeader = event.headers?.Authorization || event.headers?.authorization;
+    if (authHeader) {
+      try {
+        const token = authHeader.replace(/^Bearer\s+/i, '');
+        const decoded = jwt.decode(token) as any;
+        userEmail = decoded?.email || '';
+        userName = decoded?.name || decoded?.['cognito:username'] || '';
+      } catch (error) {
+        logger.error('Error decoding token', error);
+      }
+    }
 
     const certData: CertificationUploadRequest = parseBody(event);
 

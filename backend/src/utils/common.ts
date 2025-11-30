@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import jwt from 'jsonwebtoken';
 
 // CORS headers
 export const corsHeaders = {
@@ -51,23 +52,74 @@ export const parseBody = (event: APIGatewayProxyEvent) => {
 
 // Get user ID from JWT token
 export const getUserIdFromEvent = (event: APIGatewayProxyEvent): string | null => {
+  // First try API Gateway authorizer (if configured)
   const claims = event.requestContext.authorizer?.claims;
-  return claims?.sub || null;
+  if (claims?.sub) {
+    logger.info('Got userId from authorizer', { sub: claims.sub });
+    return claims.sub;
+  }
+  
+  // Fall back to Authorization header
+  const authHeader = event.headers?.Authorization || event.headers?.authorization;
+  logger.info('Auth header check', { hasAuth: !!authHeader, headers: Object.keys(event.headers || {}) });
+  
+  if (!authHeader) {
+    return null;
+  }
+  
+  try {
+    // Extract token from "Bearer <token>"
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    
+    // Decode without verification (verification should be done by Cognito/API Gateway)
+    // We're just extracting the claims here
+    const decoded = jwt.decode(token) as any;
+    
+    logger.info('Decoded JWT', { hasSub: !!decoded?.sub, hasEmail: !!decoded?.email });
+    return decoded?.sub || null;
+  } catch (error) {
+    logger.error('Error decoding JWT token', error);
+    return null;
+  }
 };
 
 // Check if user is admin
 export const isAdmin = (event: APIGatewayProxyEvent): boolean => {
-  const groups = event.requestContext.authorizer?.claims?.['cognito:groups'];
-  if (!groups) return false;
+  // First try API Gateway authorizer (if configured)
+  const authorizerGroups = event.requestContext.authorizer?.claims?.['cognito:groups'];
+  if (authorizerGroups) {
+    if (typeof authorizerGroups === 'string') {
+      return authorizerGroups.split(',').includes('Admins');
+    }
+    if (Array.isArray(authorizerGroups)) {
+      return authorizerGroups.includes('Admins');
+    }
+  }
   
-  // groups can be a string or array
-  if (typeof groups === 'string') {
-    return groups.split(',').includes('Admins');
+  // Fall back to Authorization header
+  const authHeader = event.headers?.Authorization || event.headers?.authorization;
+  if (!authHeader) {
+    return false;
   }
-  if (Array.isArray(groups)) {
-    return groups.includes('Admins');
+  
+  try {
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const decoded = jwt.decode(token) as any;
+    
+    const groups = decoded?.['cognito:groups'];
+    if (!groups) return false;
+    
+    if (typeof groups === 'string') {
+      return groups.split(',').includes('Admins');
+    }
+    if (Array.isArray(groups)) {
+      return groups.includes('Admins');
+    }
+    return false;
+  } catch (error) {
+    logger.error('Error decoding JWT token for admin check', error);
+    return false;
   }
-  return false;
 };
 
 // Environment variables

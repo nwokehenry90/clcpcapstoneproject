@@ -37,7 +37,7 @@ const AdminDashboard: React.FC = () => {
       // Try to fetch pending certifications - backend will return 403 if not admin
       setLoading(true);
       const response = await adminApi.getPendingCertifications();
-      setPendingCerts(response.data);
+      setPendingCerts(response.data.data || response.data);
       setIsAdmin(true);
     } catch (err: any) {
       if (err.response?.status === 403 || err.response?.status === 401) {
@@ -57,7 +57,7 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       const response = await adminApi.getPendingCertifications();
-      setPendingCerts(response.data);
+      setPendingCerts(response.data.data || response.data);
     } catch (err: any) {
       if (err.response?.status === 403) {
         setError('Access Denied: Admin privileges required');
@@ -121,7 +121,10 @@ const AdminDashboard: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -237,7 +240,7 @@ const AdminDashboard: React.FC = () => {
                       {formatDate(cert.issueDate)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {formatDate(cert.submittedAt)}
+                      {formatDate(cert.uploadedAt || cert.createdAt)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">

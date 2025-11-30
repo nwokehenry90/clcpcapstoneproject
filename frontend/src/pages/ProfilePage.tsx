@@ -31,12 +31,13 @@ const ProfilePage: React.FC = () => {
     try {
       setLoading(true);
       const response = await profileApi.getProfile();
-      setProfile(response.data);
-      setPhoneNumber(response.data.phoneNumber || '');
-      setAddress(response.data.address || '');
-      setDateOfBirth(response.data.dateOfBirth || '');
+      const profileData = response.data.data || response.data;
+      setProfile(profileData);
+      setPhoneNumber(profileData.phoneNumber || '');
+      setAddress(profileData.address || '');
+      setDateOfBirth(profileData.dateOfBirth || '');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load profile');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -45,7 +46,7 @@ const ProfilePage: React.FC = () => {
   const loadCertifications = async () => {
     try {
       const response = await certificationApi.getUserCertifications();
-      setCertifications(response.data);
+      setCertifications(response.data.data || response.data);
     } catch (err: any) {
       console.error('Failed to load certifications:', err);
     }

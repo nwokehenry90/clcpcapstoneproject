@@ -5,7 +5,7 @@ import { getEnvVar, generateId } from '../utils/common';
 const s3Client = new S3Client({ region: getEnvVar('AWS_REGION', 'us-east-1') });
 
 export class S3Service {
-  private bucketName = getEnvVar('S3_BUCKET_NAME');
+  private bucketName = getEnvVar('CERTIFICATIONS_BUCKET');
 
   async generatePresignedUploadUrl(
     userId: string,
@@ -81,7 +81,7 @@ export class S3Service {
     const key = this.generateCertificationKey(userId, filename);
     
     const command = new PutObjectCommand({
-      Bucket: 'oshawa-skills-certifications',  // Dedicated bucket for certs
+      Bucket: this.bucketName,
       Key: key,
       ContentType: 'application/pdf',
       Metadata: {
@@ -98,7 +98,7 @@ export class S3Service {
 
   async getCertDownloadUrl(key: string): Promise<string> {
     const command = new GetObjectCommand({
-      Bucket: 'oshawa-skills-certifications',
+      Bucket: this.bucketName,
       Key: key,
     });
 
@@ -107,7 +107,7 @@ export class S3Service {
 
   async deleteCertification(key: string): Promise<void> {
     const command = new DeleteObjectCommand({
-      Bucket: 'oshawa-skills-certifications',
+      Bucket: this.bucketName,
       Key: key,
     });
 

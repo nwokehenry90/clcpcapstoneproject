@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DocumentPlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
+import { certificationApi } from '../services/apiService';
 
 const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'https://your-api-gateway-url.com/prod';
 
@@ -88,7 +89,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onSuccess, on
 
     try {
       // Step 1: Request upload URL from backend
-      const uploadResponse = await axios.post(`${API_BASE_URL}/api/certifications`, {
+      const uploadResponse = await certificationApi.uploadCertification({
         skillCategory: formData.skillCategory,
         certificateType: formData.certificateType,
         certificateTitle: formData.certificateTitle,

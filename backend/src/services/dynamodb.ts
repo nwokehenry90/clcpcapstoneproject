@@ -15,7 +15,7 @@ const client = new DynamoDBClient({ region: getEnvVar('AWS_REGION', 'us-east-1')
 const docClient = DynamoDBDocumentClient.from(client);
 
 export class SkillService {
-  private tableName = getEnvVar('SKILLS_TABLE_NAME');
+  private tableName = getEnvVar('SKILLS_TABLE');
 
   async createSkill(skillData: {
     title: string;
@@ -299,11 +299,15 @@ export class CertificationService {
     const expressionAttributeValues: Record<string, any> = {};
     
     Object.keys(updates).forEach((key, index) => {
-      const nameKey = `#attr${index}`;
-      const valueKey = `:val${index}`;
-      updateExpressions.push(`${nameKey} = ${valueKey}`);
-      expressionAttributeNames[nameKey] = key;
-      expressionAttributeValues[valueKey] = updates[key as keyof Certification];
+      const value = updates[key as keyof Certification];
+      // Skip undefined values
+      if (value !== undefined) {
+        const nameKey = `#attr${index}`;
+        const valueKey = `:val${index}`;
+        updateExpressions.push(`${nameKey} = ${valueKey}`);
+        expressionAttributeNames[nameKey] = key;
+        expressionAttributeValues[valueKey] = value;
+      }
     });
 
     const result = await docClient.send(new UpdateCommand({
