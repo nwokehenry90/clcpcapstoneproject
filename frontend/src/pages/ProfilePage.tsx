@@ -294,13 +294,13 @@ const ProfilePage: React.FC = () => {
                 <h3 className="font-semibold mb-2">Status Summary</h3>
                 <div className="flex gap-4 text-sm">
                   <span className="text-yellow-600">
-                    Pending: {certifications.filter(c => c.status === 'PENDING').length}
+                    Pending: {certifications.filter(c => c.status === 'pending').length}
                   </span>
                   <span className="text-green-600">
-                    Approved: {certifications.filter(c => c.status === 'APPROVED').length}
+                    Approved: {certifications.filter(c => c.status === 'approved').length}
                   </span>
                   <span className="text-red-600">
-                    Rejected: {certifications.filter(c => c.status === 'REJECTED').length}
+                    Rejected: {certifications.filter(c => c.status === 'rejected').length}
                   </span>
                 </div>
               </div>

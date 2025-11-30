@@ -117,8 +117,27 @@ export class SkillService {
 
     const result = await docClient.send(new ScanCommand(params));
     
+    // Enrich skills with profile data (isCertified status)
+    const skills = result.Items || [];
+    const enrichedSkills = await Promise.all(skills.map(async (skill: any) => {
+      try {
+        const profileParams = {
+          TableName: getEnvVar('PROFILES_TABLE'),
+          Key: { userId: skill.userId },
+        };
+        const profileResult = await docClient.send(new GetCommand(profileParams));
+        return {
+          ...skill,
+          isCertified: profileResult.Item?.isCertified || false,
+        };
+      } catch (error) {
+        // If profile fetch fails, return skill without certification status
+        return { ...skill, isCertified: false };
+      }
+    }));
+    
     return {
-      items: result.Items || [],
+      items: enrichedSkills,
       lastEvaluatedKey: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
     };
   }

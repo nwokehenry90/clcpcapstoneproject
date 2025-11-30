@@ -22,6 +22,7 @@ interface Skill {
   createdAt: string;
   rating?: number;
   isAvailable: boolean;
+  isCertified?: boolean;
 }
 
 const SkillsMarketplace: React.FC = () => {
@@ -30,7 +31,6 @@ const SkillsMarketplace: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [certifiedUsers] = useState<Set<string>>(new Set());
 
   const categories = [
     'all',
@@ -245,7 +245,7 @@ const SkillsMarketplace: React.FC = () => {
                 <UserIcon className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-700">{skill.userName}</span>
                 {/* Show certified badge if user is certified */}
-                {certifiedUsers.has(skill.userEmail) && (
+                {skill.isCertified && (
                   <CertifiedBadge size="small" showText={false} />
                 )}
               </div>

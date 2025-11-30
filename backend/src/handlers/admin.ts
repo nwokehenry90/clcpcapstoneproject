@@ -150,14 +150,7 @@ export const rejectCertification = async (event: APIGatewayProxyEvent): Promise<
       return createErrorResponse(400, 'Certification is not pending');
     }
 
-    // Reject certification
-    const updatedCert = await certificationService.rejectCertification(
-      certificationId,
-      adminEmail,
-      reviewRequest.rejectionReason
-    );
-
-    // Send rejection email
+    // Send rejection email before deleting
     try {
       await sesService.sendRejectionEmail(
         certification.userEmail,
@@ -170,9 +163,16 @@ export const rejectCertification = async (event: APIGatewayProxyEvent): Promise<
       // Continue even if email fails
     }
 
+    // Delete from S3
+    if (certification.documentKey) {
+      await s3Service.deleteCertification(certification.documentKey);
+    }
+
+    // Delete from DynamoDB
+    await certificationService.deleteCertification(certificationId);
+
     return createSuccessResponse({
-      message: 'Certification rejected',
-      certification: updatedCert,
+      message: 'Certification rejected and deleted',
     });
   } catch (error) {
     logger.error('Error rejecting certification', error);
